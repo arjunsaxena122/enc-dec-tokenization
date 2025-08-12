@@ -22,3 +22,6 @@ pnpm i
 ```
 
 - Once both installations are complete, the project will be set up and ready to run on your local machine.
+
+### This is deployed link 
+- https://enc-dec-tokenization.vercel.app
