@@ -1,81 +1,91 @@
 import { useState } from "react";
-import { decodeTokenFromEncodedToken, encodeTokenFromUserInput } from "./api";
-import Select from "./components/Select";
+import {
+  deTokenizationUserInput,
+  randomeColorMaker,
+  tokenCounter,
+  tokenizationUserInput,
+} from "./libs/tikToken";
 
-function App() {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [inputValue, setInputValue] = useState<string>("");
-  const [isChangeOption, setIsChangeOption] = useState<string>("Encode Input");
-  const [data, setData] = useState<string>("");
+const App = () => {
+  const [query, setQuery] = useState<string | number>("");
+  const [count, setCount] = useState<number>(0);
+  const [encodeToken, setEnCodeTokens] = useState<number[]>([]);
+  const [decodeToken, setDecodeToken] = useState<string>("");
+  const [color, setColor] = useState<string>("");
 
-  const hanldeUserInput = async () => {
-    setIsLoading(true);
-    try {
-      if (isChangeOption.trim() === "Encode Input") {
-        const res = await encodeTokenFromUserInput({ token: inputValue });
-        const encodeDataFromServer = res?.data?.data?.join(", ");
-        setTimeout(() => setData(encodeDataFromServer), 1000);
+  const handleUserQuery = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    console.log(value);
+    setQuery(value);
+    const counter = tokenCounter(value);
+    setCount(counter);
+
+    const randColor = randomeColorMaker();
+    setColor(randColor);
+
+    for (let i = 0; i < value.length; i++) {
+      if (isNaN(Number(value[i]))) {
+        const encodedTokens = tokenizationUserInput(value);
+        setEnCodeTokens(encodedTokens);
       } else {
-        if (isChangeOption.trim() === "Decode Token") {
-          const res = await decodeTokenFromEncodedToken({
-            encodedToken: inputValue.split(",").map((num) => Number(num)),
-          });
-          setTimeout(() => setData(res?.data?.data), 1000);
-        }
+        const arr = value.split(/[\s\n]+/);
+        const decodedTokens = deTokenizationUserInput(arr);
+        setDecodeToken(decodedTokens);
       }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setTimeout(() => setIsLoading(false), 1000);
     }
   };
 
+  console.log(color)
+
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-4">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full max-w-6xl">
-        <div className="bg-gray-800 rounded-lg p-6 shadow-lg border border-amber-400 flex flex-col gap-4">
-          <h1 className="text-2xl font-bold text-amber-400">
-            Token Encoder / Decoder
-          </h1>
+    <div className="flex flex-col justify-center items-center mx-auto my-12 w-full max-w-4xl px-4">
+      <h1 className="lg:text-5xl text-3xl font-bold text-center">
+        Tokenization
+      </h1>
 
-          <Select
-            isChangeOption={isChangeOption}
-            setIsChangeOption={setIsChangeOption}
-            setInputValue={setInputValue}
-            setData={setData}
-          />
+      <div className="flex flex-col gap-4 w-full my-8">
+        <label
+          htmlFor="token"
+          className="lg:text-2xl text-lg font-medium"
+        ></label>
+        <textarea
+          id="token"
+          rows={6}
+          value={query}
+          onChange={handleUserQuery}
+          placeholder="Hey, I am tokenizer website"
+          className={`w-full text-lg p-5 placeholder:text-lg caret-black outline-none shadow-lg rounded-xl border border-gray-300 ${color}`}
+        ></textarea>
+      </div>
 
-          <textarea
-            rows={8}
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            id="userInput"
-            placeholder="Type your text or numbers here..."
-            className="bg-gray-700 p-3 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
-          />
-
-          <button
-            type="submit"
-            onClick={hanldeUserInput}
-            className="bg-amber-500 hover:bg-amber-600 text-black font-semibold py-2 rounded-lg transition duration-200"
-          >
-            {isLoading ? "Submitting..." : "Submit"}
-          </button>
+      <div className="flex flex-col gap-4 w-full mt-6">
+        <div className="bg-gray-100 text-center py-4 text-xl lg:text-2xl font-semibold rounded-lg shadow">
+          Token count: <span className="text-amber-600">{count}</span>
         </div>
 
-        <div className="bg-gray-800 rounded-lg p-6 shadow-lg border border-amber-400 flex flex-col">
-          <h2 className="text-xl font-semibold mb-2 text-amber-400">Result</h2>
-          <div className="flex-1 bg-gray-700 p-4 rounded-lg overflow-auto">
-            {isLoading ? (
-              <p className="animate-pulse text-gray-400">Loading...</p>
-            ) : (
-              <p className="whitespace-pre-wrap break-words">{data}</p>
-            )}
-          </div>
+        <div className="bg-gray-100 py-4 px-6 rounded-lg shadow max-h-64 overflow-y-auto">
+          <h2 className="text-lg font-semibold mb-2">Encoded Tokens:</h2>
+          {encodeToken.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {encodeToken.map((t, i) => (
+                <span key={i}>{t}</span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-400 italic">No tokens generated yet...</p>
+          )}
+        </div>
+        <div className="bg-gray-100 py-4 px-6 rounded-lg shadow max-h-64 overflow-y-auto">
+          <h2 className="text-lg font-semibold mb-2">Decoded Tokens:</h2>
+          {decodeToken === "" ? (
+            <p className="text-gray-400 italic">No decoded token here</p>
+          ) : (
+            decodeToken
+          )}
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default App;
