@@ -8,7 +8,7 @@ const app: Application = express();
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 const options = {
-  origin: env.FRONTEND_ORIGIN,
+  origin: env.FRONTEND_ORIGIN || "http://localhost:5173",
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
 };
 app.use(cors(options));
